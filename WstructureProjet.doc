@@ -1,0 +1,28 @@
+gestionprojet/
+├── assets/
+│   ├── adaptive-icon.png
+│   ├── favicon.png
+│   └── icon.png
+│   └── splash.png
+├── components/
+│   ├── CameraShot.js
+│   ├── MapLocation.js
+│   ├── Header.js
+│   ├── ProductCard.js
+│   └── NewsCard.js
+├── navigation/
+│   ├── DrawerNavigator.js
+│   ├── StackNavigator.js
+│   └── TabNavigator.js
+├── screens/
+│   ├── HomeScreen.js
+│   ├── MarketScreen.js
+│   ├── NewsScreen.js
+│   ├── CartScreen.js
+│   └── ProductScreen.js
+├── services/
+│   └── api.js
+├── App.js
+├── app.json
+├── babel.config.js
+└── package.json
