@@ -1,8 +1,8 @@
-// screens/DetailScreen.js
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { SharedElement } from 'react-navigation-shared-element';
 
 const DetailScreen = ({ route, navigation }) => {
   const { product } = route.params;
@@ -34,29 +34,17 @@ const DetailScreen = ({ route, navigation }) => {
 
   // Function to animate the image to the cart
   const animateImageToCart = () => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(imageValue, {
-          toValue: { x: 0, y: -200 },
-          duration: 1000,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleValue, {
-          toValue: 0.7,
-          duration: 1000,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-      ]),
+    Animated.parallel([
       Animated.timing(imageValue, {
-        toValue: { x: 0, y: 0 },
-        duration: 0,
+        toValue: { x: 210, y: 350 },
+        duration: 1000,
+        easing: Easing.ease,
         useNativeDriver: true,
       }),
       Animated.timing(scaleValue, {
-        toValue: 1,
-        duration: 0,
+        toValue: 0.7,
+        duration: 1000,
+        easing: Easing.ease,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -106,11 +94,11 @@ const DetailScreen = ({ route, navigation }) => {
 
   const backgroundColor = gradientValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#fff', '#feb47b'],
+    outputRange: ['#b5c5d896', '#38516fc2'],
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       <Animated.View
         style={[
           styles.background,
@@ -119,76 +107,132 @@ const DetailScreen = ({ route, navigation }) => {
           },
         ]}
       />
-      <Animated.Image
-        source={product.image}
-        style={[
-          styles.productImage,
-          {
-            transform: [
-              { translateX: imageValue.x },
-              { translateY: imageValue.y },
-              { scale: scaleValue },
-            ],
-          },
-        ]}
-        resizeMode="cover"
-      />
-      <Text style={styles.productName}>{product.name}</Text>
-      <Text style={styles.productPrice}>${product.price}</Text>
-      <Text style={styles.productDetail}>Size: {product.size.join(', ')}</Text>
-      <Text style={styles.productDetail}>Material: {product.material}</Text>
-      <TouchableOpacity onPress={animateImageToCart} style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add to Cart</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <View style={styles.ViewImage}>
+      <SharedElement id={`item.${product.id}.photo`}>
+        <Animated.Image
+          source={product.image} // Make sure this is a valid image source
+          style={[
+            styles.productImage,
+            {
+              transform: [
+                { translateX: imageValue.x },
+                { translateY: imageValue.y },
+                { scale: scaleValue },
+              ],
+            },
+          ]}
+          resizeMode="cover"
+        />
+        </SharedElement>
+        </View>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.productName}>{product.name}</Text>
+          <View style={styles.priceContainer}>
+            <Text style={styles.productPrice}>${product.price}</Text>
+          </View>
+          <Text style={styles.productDetail}>Size: {product.size.join(', ')}</Text>
+          <Text style={styles.productDetail}>Material: {product.material}</Text>
+          <TouchableOpacity onPress={animateImageToCart} style={styles.addButton}>
+            <Text style={styles.addButtonText}>Add to Cart</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    paddingBottom: 150,
   },
   background: {
     ...StyleSheet.absoluteFillObject,
     zIndex: -1,
   },
+  ViewImage: {
+    backgroundColor: '#5a718c',
+    padding: 10,
+    width: '98%',
+    height:'40%',
+    borderBottomLeftRadius: 100,
+    borderBottomRightRadius: 100,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    marginVertical: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    justifyContent: 'center',
+      position: 'absolute',
+    top: '-2.5%',
+  left: '1%',
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: 16, // Added padding for the bottom
+  },
   productImage: {
-    width: '80%',
-    height: 300,
+    width: '60%',
+    height: '100%',
     alignSelf: 'center',
-    marginBottom: 16,
+    
+  },
+  detailsContainer: {
+    padding: 16,
+    alignItems: 'center',
+        position: 'absolute',
+    top: '40%',
+    left: '5%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  width:'100%'
   },
   productName: {
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 16,
   },
+  priceContainer: {
+    marginTop: 16,
+    padding: 8,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: '#000',
+    backgroundColor: '#fff',
+    width: '60%',
+    alignItems: 'center',
+  },
   productPrice: {
-    fontSize: 20,
-    color: '#666',
-    marginTop: 8,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
   },
   productDetail: {
     fontSize: 16,
     marginTop: 8,
+    color: '#333',
   },
   addButton: {
-    marginTop: 16,
+    marginTop: 24,
     backgroundColor: '#000',
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
-    width: '35%',
-    position: 'absolute',
-    left:'70%',
+    width: '60%',
+    alignItems: 'center',
   },
   addButtonText: {
     color: '#fff',
-    textAlign: 'center',
     fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

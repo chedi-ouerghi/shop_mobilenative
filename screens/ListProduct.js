@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, FlatList, Modal, Pressable, Button } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, FlatList, Modal, Pressable, Button, ScrollView } from 'react-native';
+import { SharedElement } from 'react-native-shared-element';
 import { products } from '../data';
-import moment from 'moment'; 
+import moment from 'moment';
 
 const ListProduct = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,41 +41,66 @@ const ListProduct = ({ navigation }) => {
       onPress={() => navigation.navigate('DetailScreen', { product: item })}
       style={styles.productCard}
     >
-      <Image source={item.image} style={styles.productImage} />
+      <SharedElement id={`item.${item.id}.photo`}>
+        <Image source={item.image} style={styles.productImage} />
+      </SharedElement>
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productPrice}>${item.price}</Text>
     </TouchableOpacity>
   );
 
+  const renderEmptyMessage = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>Aucun produit trouvé pour cette recherche.</Text>
+    </View>
+  );
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSortOrder('asc');
+    setShowRecent(false);
+  };
+
   return (
     <View style={styles.container}>
-<View style={styles.header}>
-  <TextInput
-    style={styles.searchBar}
-    placeholder="Rechercher un produit"
-    value={searchQuery}
-    onChangeText={setSearchQuery}
-  />
-  <TouchableOpacity
-    style={styles.button}
-    onPress={() => setCategoryModalVisible(true)}
-  >
-    <Text style={styles.buttonText}>{selectedCategory}</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-    style={[styles.button, styles.sortButton]} // Utiliser les styles spécifiques pour le bouton de tri
-    onPress={() => setSortModalVisible(true)}
-  >
-    <Text style={styles.sortButtonText}>
-      {sortOrder === 'asc' ? 'Price: Low to High' : 'Price: High to Low'}
-    </Text>
-  </TouchableOpacity>
-  <Button
-    title={showRecent ? 'Show All' : 'Show Recent'}
-    onPress={() => setShowRecent(!showRecent)}
-  />
-</View>
-
+      <View style={styles.containerHeaders}>
+        <View style={styles.headerSearchBar}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Rechercher un produit"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          <Button
+              title="Reset Filters"
+              onPress={resetFilters}
+            />
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.header}>
+          <View style={styles.FiltreSection}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setCategoryModalVisible(true)}
+            >
+              <Text style={styles.buttonText}>{selectedCategory}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.sortButton]}
+              onPress={() => setSortModalVisible(true)}
+            >
+              <Text style={styles.sortButtonText}>
+                {sortOrder === 'asc' ? 'Price: Low to High' : 'Price: High to Low'}
+              </Text>
+            </TouchableOpacity>
+            <Button
+              title={showRecent ? 'Show All' : 'Show Recent'}
+              onPress={() => setShowRecent(!showRecent)}
+            />
+            
+          </View>
+        </ScrollView>
+      </View>
 
       {/* Category Modal */}
       <Modal
@@ -82,7 +108,7 @@ const ListProduct = ({ navigation }) => {
         visible={categoryModalVisible}
         onRequestClose={() => setCategoryModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
+        <Pressable style={styles.modalContainer} onPress={() => setCategoryModalVisible(false)}>
           <View style={styles.modalContent}>
             {categories.map((category, index) => (
               <Pressable
@@ -97,7 +123,7 @@ const ListProduct = ({ navigation }) => {
               </Pressable>
             ))}
           </View>
-        </View>
+        </Pressable>
       </Modal>
 
       {/* Sort Modal */}
@@ -106,7 +132,7 @@ const ListProduct = ({ navigation }) => {
         visible={sortModalVisible}
         onRequestClose={() => setSortModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
+        <Pressable style={styles.modalContainer} onPress={() => setSortModalVisible(false)}>
           <View style={styles.modalContent}>
             <Pressable
               style={styles.modalOption}
@@ -127,69 +153,131 @@ const ListProduct = ({ navigation }) => {
               <Text style={styles.modalOptionText}>Price: High to Low</Text>
             </Pressable>
           </View>
-        </View>
+        </Pressable>
       </Modal>
 
+       <View style={styles.containerList}>
       <FlatList
         data={showRecent ? recentProducts : filteredProducts}
         renderItem={renderProduct}
         keyExtractor={item => item.id}
-        numColumns={2} // Deux éléments par ligne
-        columnWrapperStyle={styles.row} // Style pour les lignes pour ajouter un espacement
-        showsVerticalScrollIndicator={true} // Assurez-vous que l'indicateur de défilement vertical est affiché
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        showsVerticalScrollIndicator={true}
+        ListEmptyComponent={renderEmptyMessage}
         onEndReached={() => console.log('End reached')}
-        onEndReachedThreshold={0.1} // Déclenchement du défilement automatique lorsque 10% du contenu est visible
-      />
+        onEndReachedThreshold={0.1}
+        />
+        </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
- container: {
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-    paddingBottom: 150,
-    },
-    header: {
+container: {
+  padding: 2, // Augmenter la valeur de padding pour plus d'espace intérieur
+  backgroundColor: '#fff', // Changer la couleur de fond pour un look plus propre
+  paddingBottom: 120, // Maintenir cette valeur pour le bas de la page
+  borderRadius: 25, // Ajuster la valeur pour des coins moins arrondis
+  shadowColor: '#000', // Ajouter une ombre pour un effet de profondeur
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 5, // Augmenter l'élévation pour un effet d'ombre plus prononcé sur Android
+  width: '95%', // Ajuster la largeur
+  position: 'relative',
+  left: '2.5%', // Centrer le conteneur horizontalement
+},
+  containerList: {
+    backgroundColor: '#ffffff',
+    paddingBottom: 250,
+  },
+  containerHeaders: {
+    flex: 0,
+    paddingBottom: 15,
+  shadowColor: '#000', // Ajouter une ombre pour un effet de profondeur
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  },
+  headerSearchBar: {
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    height: 70,
+    display: 'flex',
+    justifyContent: 'space-around',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    flexWrap: 'wrap',
-    paddingHorizontal: 10, // Ajouter un padding horizontal pour espacer les éléments des bords
+    borderRadius: 15,
   },
   searchBar: {
-    height: 40,
-    width: '60%', // Ajuster la largeur de la barre de recherche
-    borderColor: '#ddd',
+    flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingLeft: 10,
-    backgroundColor: '#fff', // Fond blanc pour l'entrée
+    borderColor: '#ccc',
+    borderRadius: 100,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    width: '50%',
+    height: '100%',
+    marginLeft:'1%'
+  },
+  header: {
+    backgroundColor: '#fff',
+    borderRadius: 100,
+    marginTop:'1%'
+  },
+  FiltreSection: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderRadius: 100,
   },
   button: {
-    height: 40,
-    width: 100,
-    backgroundColor: '#ddd', // Couleur de fond des boutons
-    borderColor: '#0056b3', // Couleur de la bordure des boutons
-    borderWidth: 1,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 10,
+    borderRadius: 5,
     marginHorizontal: 5,
   },
   buttonText: {
+    color: '#000',
     fontSize: 16,
-    color: '#000', // Couleur du texte des boutons
   },
   sortButton: {
-    height: 40,
-    width: 150, // Largeur différente pour le bouton de tri
-    backgroundColor: '#ddd', // Couleur de fond différente pour le bouton de tri
+    backgroundColor: '#fff',
   },
   sortButtonText: {
+    color: '#000',
     fontSize: 16,
-    color: '#000', // Couleur du texte du bouton de tri
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  productCard: {
+    width: '47%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  productImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: '#666',
   },
   modalContainer: {
     flex: 1,
@@ -198,54 +286,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#fff',
+    backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
-    elevation: 5,
+    width: '80%',
   },
   modalOption: {
-    padding: 10,
+    paddingVertical: 10,
   },
   modalOptionText: {
     fontSize: 16,
-    color: '#333',
-  },
-  row: {
-    justifyContent: 'space-between', // Aligner les éléments avec de l'espace entre eux
-    marginBottom: 16,
-  },
-  productCard: {
-    width: 170, // Largeur fixe pour chaque carte
-    height: 250, // Hauteur fixe pour chaque carte
-    margin: 5, // Ajouter une marge pour créer un écart
-    backgroundColor: '#fff', // Fond blanc pour la carte
-    padding: 16,
-    borderRadius: 12, // Coins arrondis
-    elevation: 4, // Ombre pour Android
-    shadowColor: '#000', // Ombre pour iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  productImage: {
-    width: '100%',
-    height: 115, // Hauteur fixe pour l'image
-    borderRadius: 8, // Coins arrondis pour l'image
-    resizeMode: 'cover',
-  },
-  productName: {
-    fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 10,
-    flex: 1, // Permet au texte de s'ajuster à l'espace restant
   },
-  productPrice: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 5,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#666',
   },
 });
-
 
 export default ListProduct;

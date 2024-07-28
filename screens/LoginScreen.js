@@ -1,4 +1,3 @@
-// screens/LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
@@ -7,20 +6,49 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    let valid = true;
+    let errors = {};
+
+    // Vérification de l'email
+    if (!email) {
+      errors.email = 'Email est requis';
+      valid = false;
+    } else if (email.length < 6) {
+      errors.email = 'Email invalide';
+      valid = false;
+    }
+
+    // Vérification du mot de passe
+    if (!password) {
+      errors.password = 'Mot de passe est requis';
+      valid = false;
+    } else if (password.length < 6) {
+      errors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+      valid = false;
+    }
+
+    setErrors(errors);
+    return valid;
+  };
 
   const handleLogin = async () => {
+    if (!validate()) {
+      return;
+    }
+
     try {
-      // Remplacez cette URL par celle de votre API de connexion
       const response = await axios.post('https://jsonplaceholder.typicode.com/posts', {
         email,
         password,
       });
 
       if (response.status === 201) {
-        // Stocker le token et le nom d'utilisateur dans AsyncStorage
-        await AsyncStorage.setItem('userToken', 'fake-token'); // Remplacez 'fake-token' par le token réel
-        await AsyncStorage.setItem('username', email); // Utiliser l'email comme exemple de nom d'utilisateur
-        navigation.navigate('ProfileScreen'); // Rediriger vers l'écran d'accueil après la connexion
+        await AsyncStorage.setItem('userToken', 'fake-token');
+        await AsyncStorage.setItem('username', email);
+        navigation.navigate('ProfileScreen');
       } else {
         Alert.alert('Échec de la connexion', 'Email ou mot de passe incorrect.');
       }
@@ -39,7 +67,9 @@ const LoginScreen = ({ navigation }) => {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        autoCapitalize="none"
       />
+      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
       <TextInput
         style={styles.input}
         placeholder="Mot de passe"
@@ -47,6 +77,7 @@ const LoginScreen = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
+      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
       <TouchableOpacity onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Se connecter</Text>
       </TouchableOpacity>
@@ -73,7 +104,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: '#ccc',
     borderBottomWidth: 1,
-    marginBottom: 20,
+    marginBottom: 10,
     paddingHorizontal: 8,
   },
   button: {
@@ -92,7 +123,12 @@ const styles = StyleSheet.create({
   },
   linkText: {
     color: '#007BFF',
-    fontSize: 16,
+    fontSize: 16
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
   },
 });
 

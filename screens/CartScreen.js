@@ -87,12 +87,16 @@ const CartScreen = () => {
     <View style={styles.container}>
       <CustomNavbar cartCount={cart.length} />
 
-      <FlatList
-        data={cart}
-        keyExtractor={(item) => item.id.toString()} // Assurez-vous que chaque item a un id unique
-        renderItem={renderCartItem}
-        style={styles.cartList}
-      />
+      {cart.length === 0 ? (
+        <Text style={styles.emptyCartMessage}>No products in the cart</Text>
+      ) : (
+        <FlatList
+          data={cart}
+          keyExtractor={(item) => item.id.toString()} // Assurez-vous que chaque item a un id unique
+          renderItem={renderCartItem}
+          style={styles.cartList}
+        />
+      )}
       
       <View style={styles.promoContainer}>
         <TextInput
@@ -112,7 +116,10 @@ const CartScreen = () => {
         <Text style={styles.finalText}>Final Total: ${total.toFixed(2)}</Text>
       </View>
 
-      <TouchableOpacity style={styles.checkoutButton}>
+      <TouchableOpacity
+        style={styles.checkoutButton}
+        onPress={() => navigation.navigate('PaymentScreen')}
+      >
         <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
       </TouchableOpacity>
     </View>
@@ -249,6 +256,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  emptyCartMessage: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 50,
+  },
 });
 
 const navbarStyles = StyleSheet.create({
@@ -274,13 +287,11 @@ const navbarStyles = StyleSheet.create({
   cartIcon: {
     width: 24,
     height: 24,
-    tintColor: '#fff',
     marginRight: 8,
   },
   cartCount: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 

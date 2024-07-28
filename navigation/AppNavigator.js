@@ -14,6 +14,8 @@ import LogoHeader from '../components/LogoHeader';
 import AddProductScreen from '../screens/AddProductScreen';
 import LoginScreen from '../screens/LoginScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import PaymentScreen from '../screens/PaymentScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -37,7 +39,8 @@ const AppNavigator = () => {
   <Stack.Screen name="CartScreen" component={CartScreen} />
           <Stack.Screen name="ListProductBrand" component={ListProductBrand} /> 
           <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
-           <Stack.Screen name="ProfileScreen" component={ProfileScreen} /> 
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen} /> 
+          <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
 </Stack.Navigator>
 
         <Header /> 
